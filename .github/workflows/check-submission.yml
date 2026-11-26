@@ -1,0 +1,84 @@
+name: Check submission
+
+on:
+  pull_request:
+    paths:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check folder name, required files and sizes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -u
+          fail=0
+          changed=$(git diff --name-only "$BASE_SHA"...HEAD)
+          echo "Changed files:"; echo "$changed"; echo
+          if [ -z "$changed" ]; then echo "::error::No files changed."; exit 1; fi
+
+          # 1. Every changed file must be inside one submissions/P<NN>_<roll>/ folder
+          folders=""
+          while IFS= read -r f; do
+            if [[ "$f" =~ ^submissions/(P[0-9]{2}_[0-9]{8,12})/ ]]; then
+              folders="$folders ${BASH_REMATCH[1]}"
+            else
+              echo "::error file=$f::Only files inside submissions/P<NN>_<UniversityRollNo>/ may be changed (found: $f)."
+              fail=1
+            fi
+          done <<< "$changed"
+          uniq_folders=$(echo $folders | tr ' ' '\n' | sort -u | grep -v '^$' || true)
+          n=$(echo "$uniq_folders" | grep -c . || true)
+          if [ "$n" -gt 1 ]; then
+            echo "::error::A pull request must change only one submission folder. Found: $(echo $uniq_folders)"
+            fail=1
+          fi
+
+          # 2. Required files in the submission folder
+          for d in $uniq_folders; do
+            p="submissions/$d"
+            [ -f "$p/paper.pdf" ]    || { echo "::error::$p/paper.pdf is missing."; fail=1; }
+            [ -f "$p/metadata.yml" ] || { echo "::error::$p/metadata.yml is missing (copy it from submissions/_TEMPLATE)."; fail=1; }
+            [ -f "$p/CHANGES.md" ]   || { echo "::error::$p/CHANGES.md is missing (copy it from submissions/_TEMPLATE)."; fail=1; }
+            if [ ! -d "$p/source" ] || [ -z "$(ls -A "$p/source" 2>/dev/null)" ]; then
+              echo "::error::$p/source/ is missing or empty (add your LaTeX or Word source)."; fail=1
+            fi
+            if [ -f "$p/paper.pdf" ] && ! head -c 5 "$p/paper.pdf" | grep -q '%PDF'; then
+              echo "::error::$p/paper.pdf is not a PDF file."; fail=1
+            fi
+            if [ -f "$p/metadata.yml" ]; then
+              num=${d%%_*}; roll=${d#*_}
+              grep -Eq "^problem_number:[[:space:]]*\"?$num\"?" "$p/metadata.yml" || { echo "::error::metadata.yml problem_number does not match the folder name ($num)."; fail=1; }
+              grep -Eq "^university_roll_no:[[:space:]]*\"?$roll\"?" "$p/metadata.yml" || { echo "::error::metadata.yml university_roll_no does not match the folder name ($roll)."; fail=1; }
+              grep -q "Your Full Name" "$p/metadata.yml" && { echo "::error::metadata.yml still contains the template name."; fail=1; }
+            fi
+            if [ -f "$p/CHANGES.md" ] && [ "$(grep -c '^| [0-9]' "$p/CHANGES.md" || true)" -lt 2 ]; then
+              echo "::warning::CHANGES.md has fewer than 2 numbered rows – answer every feedback point."
+            fi
+          done
+
+          # 3. No large files, no data dumps, no secrets files
+          while IFS= read -r f; do
+            [ -f "$f" ] || continue
+            size=$(stat -c %s "$f")
+            if [ "$size" -gt 20971520 ]; then echo "::error file=$f::File larger than 20 MB."; fail=1; fi
+            case "$f" in
+              *.csv|*.xlsx|*.xls|*.parquet|*.zip|*.rar|*.7z|*.nc|*.h5|*.pkl|*.joblib)
+                echo "::error file=$f::Data or archive files belong in your own project repository, not here."; fail=1 ;;
+              *.env|*credentials*|*secret*)
+                echo "::error file=$f::Do not commit secrets or credential files."; fail=1 ;;
+            esac
+          done <<< "$changed"
+
+          if [ "$fail" -ne 0 ]; then echo; echo "Submission check failed – see the errors above."; exit 1; fi
+          echo "Submission check passed for: $uniq_folders"

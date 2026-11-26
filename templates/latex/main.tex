@@ -1,0 +1,90 @@
+% Starter article in the Springer LNCS layout used for the class proceedings.
+% Easiest: on Overleaf, create a project from the "Springer LNCS" template
+% (it provides llncs.cls and splncs04.bst), then replace its main .tex with this file.
+\documentclass[runningheads]{llncs}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xurl}
+
+\begin{document}
+
+\title{Informative Title: Method + Task + Place}
+\titlerunning{Short Running Title}
+\author{Your Full Name\inst{1}}
+\authorrunning{Initials. Surname}
+\institute{Department of Computer Science, Ramanujan College, University of Delhi, New Delhi, India\\
+\email{your.email@example.com}}
+
+\maketitle
+
+\begin{abstract}
+150--250 words: the problem and why it matters, the data, the methods compared,
+the key numbers (with the baseline), and the main conclusion. No citations.
+\keywords{keyword one \and keyword two \and machine learning \and SDG~X}
+\end{abstract}
+
+\section{Introduction}
+Why the problem matters (with cited facts \cite{ref1}), the gap, your research question,
+and your contributions as a short list. End with an outline of the paper.
+
+\section{Related Work}
+8 or more recent research papers: what they did, data, results and limitations, and how your study differs.
+
+\section{Data and Preprocessing}
+Source, link, licence and access date \cite{dataset}. Variables table, EDA, missing values,
+outliers, scaling, encoding, and feature selection or PCA, with reasons.
+
+\section{Methodology}
+A workflow figure and each algorithm with its key equation, for example
+\begin{equation}
+  \hat{y} = \beta_0 + \sum_{j=1}^{p} \beta_j x_j .
+  \label{eq:linear}
+\end{equation}
+Define every symbol. State the metrics.
+
+\section{Experimental Setup}
+Split and cross-validation scheme (time-ordered or grouped where needed; test set used once),
+hyper-parameter grids, software versions, and random seeds.
+
+\section{Results}
+\begin{table}[htbp]
+\centering
+\caption{Test results (mean $\pm$ sd over 5 folds). Best value in bold.}
+\label{tab:results}
+\begin{tabular}{lcc}
+\toprule
+Model & RMSE & $R^2$ \\
+\midrule
+Baseline (mean) & 0.00 $\pm$ 0.00 & 0.00 \\
+Model A         & 0.00 $\pm$ 0.00 & 0.00 \\
+\textbf{Model B} & \textbf{0.00 $\pm$ 0.00} & \textbf{0.00} \\
+\bottomrule
+\end{tabular}
+\end{table}
+Refer to every table and figure in the text (Table~\ref{tab:results}). Include error or subgroup analysis.
+
+\section{Discussion}
+Interpretation, limitations, ethics and bias, and who could use the results.
+
+\section{Conclusion and Future Work}
+Answer the research question and give 2--3 concrete next steps.
+
+\begin{credits}
+\subsubsection{\discintname}
+The author has no competing interests to declare.
+
+\subsubsection{Data and code availability.} \url{https://github.com/your-username/your-repo}
+
+\subsubsection{Use of AI tools.} State honestly which AI tools were used and for what,
+and that you checked all output and take responsibility for the content.
+\end{credits}
+
+\begin{thebibliography}{8}
+\bibitem{ref1} A. Author and B. Author, ``Title of the paper,'' \emph{Journal Name}, vol.~1, no.~1, pp.~1--10, 2024, doi:~10.xxxx/xxxxx.
+\bibitem{dataset} Organisation, ``Dataset title,'' Portal name. [Online]. Available: \url{https://example.org} (accessed DD Mon YYYY).
+\end{thebibliography}
+
+\end{document}
