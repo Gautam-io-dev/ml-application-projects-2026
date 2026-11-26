@@ -47,6 +47,6 @@ Section, table and figure numbers refer to the revised `paper.pdf` (Springer LNC
 - Not done: validation on a second institution's data, because no such dataset is available. It is listed as a limitation and as future work.
 
 ## Reproducibility
-- Repository commit used for this version: `39e64bcd2a65d5a2b593bdb1db854cc7ab465965`
+- Repository commit used for this version: `1f132ac9edbd591d2ec1bd02f191cc6e7da35d9b`
 - Command that regenerates all results: `python campus_placement_experiments.py --data Placement_Data_Full_Class.csv --outdir results`
 - Command that regenerates the LaTeX source from the results: `python paper/build_latex.py`
